@@ -249,7 +249,7 @@ impl Buffer {
       self.memory[begin..slice_end].copy_from_slice(data);
       // and move the data from after the original slice to right behind the new slice
       self.memory.copy_within(begin+length..=self.end, begin + data_len);
-      self.end = self.end - (length - data_len);
+      self.end -= length - data_len;
     } else if data_len == length {
       // the size of the slice and the buffer remains unchanged, only the slice
       // needs to be written
@@ -261,7 +261,7 @@ impl Buffer {
       self.memory.copy_within(begin+length..self.end, begin + data_len);
       // then copy the new slice in the vector at the desired location
       self.memory[begin..slice_end].copy_from_slice(data);
-      self.end = self.end + data_len - length;
+      self.end += data_len - length;
     }
     Some(self.available_data())
   }
@@ -278,7 +278,7 @@ impl Buffer {
     let slice_end = begin + data_len;
     self.memory.copy_within(start..self.end, start+data_len);
     self.memory[begin..slice_end].copy_from_slice(data);
-    self.end = self.end + data_len;
+    self.end += data_len;
     Some(self.available_data())
   }
 }
