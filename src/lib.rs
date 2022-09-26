@@ -49,7 +49,6 @@
 //!
 use std::cmp;
 use std::io::{self,Write,Read};
-use std::iter::repeat;
 
 /// the Buffer contains the underlying memory and data positions
 ///
@@ -70,8 +69,7 @@ pub struct Buffer {
 impl Buffer {
   /// allocates a new buffer of maximum size `capacity`
   pub fn with_capacity(capacity: usize) -> Buffer {
-    let mut v = Vec::with_capacity(capacity);
-    v.extend(repeat(0).take(capacity));
+    let v = vec![0; capacity];
     Buffer {
       memory:   v,
       capacity: capacity,
