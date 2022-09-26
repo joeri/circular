@@ -242,26 +242,29 @@ impl Buffer {
     let begin     = self.position + start;
     let slice_end = begin + data_len;
 
-    if data_len < length {
-      // we reduced the data size
+    match data_len.cmp(&length) {
+      cmp::Ordering::Less => {
+        // we reduced the data size
 
-      // the order here doesn't matter that much, we need to copy the replacement in
-      self.memory[begin..slice_end].copy_from_slice(data);
-      // and move the data from after the original slice to right behind the new slice
-      self.memory.copy_within(begin+length..=self.end, begin + data_len);
-      self.end -= length - data_len;
-    } else if data_len == length {
-      // the size of the slice and the buffer remains unchanged, only the slice
-      // needs to be written
-      self.memory[begin..slice_end].copy_from_slice(data);
-    } else {
-      // we put more data in the buffer
+        // the order here doesn't matter that much, we need to copy the replacement in
+        self.memory[begin..slice_end].copy_from_slice(data);
+        // and move the data from after the original slice to right behind the new slice
+        self.memory.copy_within(begin+length..=self.end, begin + data_len);
+        self.end -= length - data_len;
+      }
+      cmp::Ordering::Equal =>
+        // the size of the slice and the buffer remains unchanged, only the slice
+        // needs to be written
+        self.memory[begin..slice_end].copy_from_slice(data),
+      cmp::Ordering::Greater => {
+        // we put more data in the buffer
 
-      // first copy all the data behind the old slice to be behind the new slice
-      self.memory.copy_within(begin+length..self.end, begin + data_len);
-      // then copy the new slice in the vector at the desired location
-      self.memory[begin..slice_end].copy_from_slice(data);
-      self.end += data_len - length;
+        // first copy all the data behind the old slice to be behind the new slice
+        self.memory.copy_within(begin+length..self.end, begin + data_len);
+        // then copy the new slice in the vector at the desired location
+        self.memory[begin..slice_end].copy_from_slice(data);
+        self.end += data_len - length;
+      }
     }
     Some(self.available_data())
   }
